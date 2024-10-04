@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Расписание пар</title>
+    <style>
+        /* Основные стили */
+        @keyframes rainbow {
+            0% { border-color: #ff4e50; color: #ff4e50; }
+            16% { border-color: #fc913a; color: #fc913a; }
+            33% { border-color: #f9d423; color: #f9d423; }
+            50% { border-color: #ede574; color: #ede574; }
+            66% { border-color: #e1f5c4; color: #e1f5c4; }
+            83% { border-color: #ffefd5; color: #ffefd5; }
+            100% { border-color: #ff4e50; color: #ff4e50; }
+        }
+
+        @keyframes fadeIn {
+            0% {
+                opacity: 0;
+                transform: translateY(100px);
+            }
+            100% {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Анимация неона для подсветки активного дня */
+        @keyframes neon-glow {
+            0%, 100% {
+                box-shadow: 0 0 10px rgba(0, 255, 255, 0.8), 0 0 20px rgba(0, 255, 255, 0.5);
+            }
+            50% {
+                box-shadow: 0 0 20px rgba(0, 255, 255, 1), 0 0 30px rgba(0, 255, 255, 0.8);
+            }
+        }
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            margin: 0;
+            padding: 0;
+            background: radial-gradient(circle at 50% 50%, #0f0c29, #302b63, #24243e);
+            color: #fff;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        h1 {
+            font-size: 36px;
+            margin: 20px 0;
+            text-align: center;
+            animation: rainbow 5s linear infinite;
+            animation: fadeIn 1s ease-in-out forwards;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            background: linear-gradient(45deg, #ff4e50, #f9d423);
+            -webkit-background-clip: text;
+            color: transparent;
+            transition: text-shadow 0.3s ease-in-out;
+        }
+
+        h1:hover {
+            text-shadow: 0px 0px 10px rgba(255, 78, 80, 0.8), 0px 0px 20px rgba(255, 148, 80, 0.7);
+        }
+
+        .current-info {
+            width: 90%;
+            padding: 20px;
+            margin: 10px 0;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            text-align: center;
+            font-size: 20px;
+            line-height: 1.8;
+            box-shadow: 0px 4px 20px rgba(0, 255, 255, 0.5);
+            backdrop-filter: blur(20px);
+            animation: fadeIn 1.2s ease-in-out forwards;
+        }
+
+        .schedule-container {
+            display: flex;
+            justify-content: space-around;
+            width: 90%;
+            margin-top: 20px;
+            opacity: 0;
+            animation: fadeIn 1.4s ease-in-out forwards;
+            gap: 20px;
+        }
+
+        .schedule-block {
+            width: 45%;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            border-radius: 15px;
+            text-align: center;
+            opacity: 0;
+            animation: fadeIn 1.6s ease-in-out forwards;
+            box-shadow: 0px 4px 15px rgba(0, 255, 255, 0.2);
+            backdrop-filter: blur(20px);
+        }
+
+        .schedule-block h2 {
+            font-size: 24px;
+            margin-bottom: 20px;
+            animation: rainbow 5s linear infinite;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            background: linear-gradient(45deg, #fc913a, #ede574);
+            -webkit-background-clip: text;
+            color: transparent;
+        }
+
+        .pair-list {
+            list-style-type: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .pair-list li {
+            padding: 10px;
+            margin-bottom: 10px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            font-size: 16px;
+            backdrop-filter: blur(6px);
+            box-shadow: 0px 2px 6px rgba(0, 255, 255, 0.2);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .pair-list li:hover {
+            transform: translateY(-5px);
+            box-shadow: 0px 4px 10px rgba(255, 255, 255, 0.2);
+        }
+
+        /* Темы */
+        .theme-selector {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-top: 30px;
+            gap: 10px;
+            width: 90%;
+        }
+
+        .theme-button {
+            width: 40px;
+            height: 40px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: transform 0.3s;
+            border: 2px solid transparent; /* Добавлено для выделения при наведении */
+        }
+
+        .theme-button:hover {
+            transform: scale(1.1);
+            box-shadow: 0px 4px 10px rgba(255, 255, 255, 0.5);
+        }
+
+        /* Цвета тем */
+        .light { background: white; color: black; }
+        .dark { background: black; color: white; }
+        .red { background: #ff4e50; color: white; }
+        .yellow { background: #f9d423; color: black; }
+        .blue { background: #0f0c29; color: white; }
+        .orange { background: #fc913a; color: black; }
+        .gradient { background: linear-gradient(45deg, #ff4e50, #f9d423); color: white; }
+        .gradient-orange { background: linear-gradient(45deg, #fc913a, #f9d423); color: black; }
+
+        /* Адаптация для мобильных устройств */
+        @media (max-width: 600px) {
+            .schedule-container {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .schedule-block {
+                width: 100%;
+                margin-bottom: 20px;
+            }
+
+            .current-info {
+                font-size: 16px;
+            }
+
+            .pair-list li {
+                font-size: 14px;
+            }
+
+            .theme-button {
+                width: 30px;
+                height: 30px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<h1>Расписание пар</h1>
+
+<div class="current-info" id="current-info">
+    Определение текущей пары...
+</div>
+
+<div class="schedule-container">
+    <div class="schedule-block" id="weekday-block">
+        <h2>Будни</h2>
+        <ul class="pair-list" id="weekday-schedule"></ul>
+    </div>
+    <div class="schedule-block" id="saturday-block">
+        <h2>Суббота</h2>
+        <ul class="pair-list" id="saturday-schedule"></ul>
+    </div>
+</div>
+
+<div class="theme-selector" id="theme-selector">
+    <button class="theme-button light" onclick="changeTheme('light')"></button>
+    <button class="theme-button dark" onclick="changeTheme('dark')"></button>
+    <button class="theme-button red" onclick="changeTheme('red')"></button>
+    <button class="theme-button yellow" onclick="changeTheme('yellow')"></button>
+    <button class="theme-button blue" onclick="changeTheme('blue')"></button>
+    <button class="theme-button orange" onclick="changeTheme('orange')"></button>
+    <button class="theme-button gradient" onclick="changeTheme('gradient')"></button>
+    <button class="theme-button gradient-orange" onclick="changeTheme('gradient-orange')"></button>
+</div>
+
+<script>
+    const schedule = {
+        "Будни": [
+            { number: 1, start: "08:45", end: "10:05" },
+            { number: 2, start: "10:25", end: "11:45" },
+            { number: 3, start: "12:05", end: "13:25" },
+            { number: 4, start: "13:35", end: "14:55" },
+            { number: 5, start: "15:05", end: "16:25" },
+            { number: 6, start: "16:35", end: "17:55" },
+        ],
+        "Суббота": [
+            { number: 1, start: "08:45", end: "10:00" },
+            { number: 2, start: "10:10", end: "11:25" },
+            { number: 3, start: "11:35", end: "12:50" },
+            { number: 4, start: "13:00", end: "14:15" },
+            { number: 5, start: "14:25", end: "15:50" },
+            { number: 6, start: "16:00", end: "17:15" },
+        ]
+    };
+
+    function loadSchedule() {
+        const weekdayList = document.getElementById('weekday-schedule');
+        const saturdayList = document.getElementById('saturday-schedule');
+
+        schedule['Будни'].forEach(pair => {
+            const li = document.createElement('li');
+            li.textContent = `${pair.number}-я пара: ${pair.start} - ${pair.end}`;
+            weekdayList.appendChild(li);
+        });
+
+        schedule['Суббота'].forEach(pair => {
+            const li = document.createElement('li');
+            li.textContent = `${pair.number}-я пара: ${pair.start} - ${pair.end}`;
+            saturdayList.appendChild(li);
+        });
+    }
+
+    function displayCurrentPair() {
+        const now = new Date();
+        const day = now.getDay();
+        const hours = now.getHours();
+        const minutes = now.getMinutes();
+        const currentTime = hours * 60 + minutes; // Время в минутах с начала дня
+        const currentInfoDiv = document.getElementById('current-info');
+
+        let activePair = null;
+        const todaySchedule = day === 6 ? schedule['Суббота'] : schedule['Будни'];
+
+        for (const pair of todaySchedule) {
+            const pairStart = parseInt(pair.start.split(':')[0]) * 60 + parseInt(pair.start.split(':')[1]);
+            const pairEnd = parseInt(pair.end.split(':')[0]) * 60 + parseInt(pair.end.split(':')[1]);
+
+            if (currentTime >= pairStart && currentTime <= pairEnd) {
+                activePair = pair;
+                break;
+            }
+        }
+
+        if (activePair) {
+            const endTime = new Date();
+            endTime.setHours(activePair.end.split(':')[0]);
+            endTime.setMinutes(activePair.end.split(':')[1]);
+
+            const timeLeft = Math.round((endTime - now) / 60000); // Время до конца пары в минутах
+
+            const message = `Сейчас ${activePair.number}-я пара (${activePair.start} - ${activePair.end}).<br>
+                            Закончится через ${timeLeft} минут в ${activePair.end}.`;
+            currentInfoDiv.innerHTML = message;
+        } else {
+            currentInfoDiv.innerHTML = "В данный момент пар нет.";
+        }
+    }
+
+    function changeTheme(theme) {
+        const body = document.body;
+        const currentStyles = getComputedStyle(body);
+        
+        switch (theme) {
+            case 'light':
+                body.style.background = '#ffffff';
+                body.style.color = '#000000';
+                break;
+            case 'dark':
+                body.style.background = '#000000';
+                body.style.color = '#ffffff';
+                break;
+            case 'red':
+                body.style.background = '#ff4e50';
+                body.style.color = '#000000'; // Изменено на черный для лучшей читаемости
+                break;
+            case 'yellow':
+                body.style.background = '#f9d423';
+                body.style.color = '#000000';
+                break;
+            case 'blue':
+                body.style.background = '#0f0c29';
+                body.style.color = '#ffffff';
+                break;
+            case 'orange':
+                body.style.background = '#fc913a';
+                body.style.color = '#000000'; // Изменено на черный для лучшей читаемости
+                break;
+            case 'gradient':
+                body.style.background = 'linear-gradient(45deg, #ff4e50, #f9d423)';
+                body.style.color = '#000000'; // Изменено на черный для лучшей читаемости
+                break;
+            case 'gradient-orange':
+                body.style.background = 'linear-gradient(45deg, #fc913a, #f9d423)';
+                body.style.color = '#000000'; // Изменено на черный для лучшей читаемости
+                break;
+            default:
+                body.style.background = 'radial-gradient(circle at 50% 50%, #0f0c29, #302b63, #24243e)';
+                body.style.color = '#fff';
+        }
+    }
+
+    loadSchedule();
+    displayCurrentPair();
+    setInterval(displayCurrentPair, 60000); // Обновление информации каждую минуту
+</script>
+
+</body>
+</html>
